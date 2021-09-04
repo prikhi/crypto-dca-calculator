@@ -9,7 +9,6 @@ module Finance.Crypto.DCA.Main
     , Args(..)
     ) where
 
-import           Control.Monad                  ( forM_ )
 import           Data.Fixed                     ( Pico )
 import           Data.Scientific                ( FPFormat(Fixed)
                                                 , formatScientific
@@ -29,16 +28,19 @@ import           System.Console.CmdArgs         ( (&=)
                                                 , summary
                                                 , typ
                                                 )
+import           Text.Tabular                   ( Header(..)
+                                                , Properties(..)
+                                                , Table(..)
+                                                )
+import           Text.Tabular.AsciiArt          ( render )
 
 import           Paths_crypto_dca_calculator    ( version )
-
-import qualified Data.List                     as L
 
 
 
 -- | Run the executable.
 run :: Args -> IO ()
-run (cleanArgs -> CleanedArgs{..}) = do
+run (cleanArgs -> args@CleanedArgs{..}) = do
     let percents = map ((* caPercentPerStep) . fromInteger) [1 .. caSteps]
         prices =
             map (\percent -> caCurrentPrice * (1 - (percent / 100))) percents
@@ -47,24 +49,43 @@ run (cleanArgs -> CleanedArgs{..}) = do
         totalBought      = sum $ map fst amountsAndPrices
         avgBuy           = caTotalSpend / totalBought
 
-    renderHeader ["Amount", "Price"]
-    forM_ amountsAndPrices $ \(amt, price) -> do
-        let amtStr   = renderAmount amt
-            priceStr = renderPrice price
-        putStrLn $ L.intercalate "\t" $ flipRow [amtStr, priceStr]
-    putStrLn ""
+    putStrLn $ renderTable args percents amountsAndPrices totalBought avgBuy
 
-    renderHeader ["Total", "Avg"]
-    putStrLn $ L.intercalate "\t" $ flipRow
-        [renderAmount totalBought, renderPrice avgBuy]
+renderTable
+    :: CleanedArgs -> [Pico] -> [(Pico, Pico)] -> Pico -> Pico -> String
+renderTable CleanedArgs { caFlipColumns } percents amountsAndPrices totalBought avgBuy
+    = let
+          percentHeaders = map
+              ( Header
+              . (<> "%")
+              . formatScientific Fixed (Just 2)
+              . realToFrac
+              . negate
+              )
+              percents
+          rowHeaders = Group
+              DoubleLine
+              [ Group NoLine percentHeaders
+              , Group NoLine $ flipRow [Header "Total", Header "Avg"]
+              ]
+          columnHeaders =
+              Group SingleLine $ flipRow [Header "Amount", Header "Price"]
+
+          tableData =
+              map (\(a, p) -> flipRow [renderAmount a, renderPrice p])
+                  amountsAndPrices
+                  <> flipRow
+                         [ flipRow [renderAmount totalBought, ""]
+                         , flipRow ["", renderPrice avgBuy]
+                         ]
+
+          table = Table rowHeaders columnHeaders tableData
+      in
+          render id id id table
   where
     flipRow      = if caFlipColumns then reverse else id
     renderAmount = formatScientific Fixed (Just 8) . realToFrac
     renderPrice  = formatScientific Fixed (Just 2) . realToFrac
-    renderHeader (flipRow -> names) = do
-        let lengths = map length names
-        putStrLn $ L.intercalate "\t\t" names
-        putStrLn $ L.intercalate "\t\t" $ map (`replicate` '-') lengths
 
 
 data CleanedArgs = CleanedArgs
