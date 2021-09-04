@@ -62,6 +62,7 @@ library:
         src
     dependencies:
         - cmdargs >= 0.10 && < 1
+        - scientific < 1
 
 executables:
     crypto-dca-calculator:

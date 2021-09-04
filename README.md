@@ -9,8 +9,19 @@ orders.
 Requires [`stack`][get-stack]:
 
 ```sh
-stack run
-stack run -- --help
+# Spend $100 in 4 steps of -0.25% at a current price of $50,000
+$ stack run 0.25 4 50000 100
+Amount      Price
+------      -----
+0.00050125  49875.00
+0.00050251  49750.00
+0.00050378  49625.00
+0.00050505  49500.00
+
+Total       Avg Price
+-----       ---------
+0.00201259  49687.11
+$ stack run -- --help
 ```
 
 [get-stack]: https://docs.haskellstack.org/en/stable/README/
