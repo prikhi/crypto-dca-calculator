@@ -21,6 +21,7 @@ import           System.Console.CmdArgs         ( (&=)
                                                 , argPos
                                                 , cmdArgs
                                                 , def
+                                                , explicit
                                                 , help
                                                 , helpArg
                                                 , name
@@ -47,16 +48,20 @@ run (cleanArgs -> CleanedArgs{..}) = do
         avgBuy           = caTotalSpend / totalBought
 
     renderHeader ["Amount", "Price"]
-    forM_ amountsAndPrices $ \(amt, price) ->
-        putStrLn $ renderAmount amt <> "\t" <> renderPrice price
+    forM_ amountsAndPrices $ \(amt, price) -> do
+        let amtStr   = renderAmount amt
+            priceStr = renderPrice price
+        putStrLn $ L.intercalate "\t" $ flipRow [amtStr, priceStr]
     putStrLn ""
 
-    renderHeader ["Total", "Avg Price"]
-    putStrLn $ renderAmount totalBought <> "\t" <> renderPrice avgBuy
+    renderHeader ["Total", "Avg"]
+    putStrLn $ L.intercalate "\t" $ flipRow
+        [renderAmount totalBought, renderPrice avgBuy]
   where
+    flipRow      = if caFlipColumns then reverse else id
     renderAmount = formatScientific Fixed (Just 8) . realToFrac
     renderPrice  = formatScientific Fixed (Just 2) . realToFrac
-    renderHeader names = do
+    renderHeader (flipRow -> names) = do
         let lengths = map length names
         putStrLn $ L.intercalate "\t\t" names
         putStrLn $ L.intercalate "\t\t" $ map (`replicate` '-') lengths
@@ -67,6 +72,7 @@ data CleanedArgs = CleanedArgs
     , caSteps          :: Integer
     , caCurrentPrice   :: Pico
     , caTotalSpend     :: Pico
+    , caFlipColumns    :: Bool
     }
     deriving (Show, Read, Eq)
 
@@ -76,6 +82,7 @@ cleanArgs Args {..} = CleanedArgs
     , caSteps          = argSteps
     , caCurrentPrice   = realToFrac argCurrentPrice
     , caTotalSpend     = realToFrac argTotalSpend
+    , caFlipColumns    = argFlipColumns
     }
 
 
@@ -85,6 +92,7 @@ data Args = Args
     , argSteps          :: Integer
     , argCurrentPrice   :: Double
     , argTotalSpend     :: Double
+    , argFlipColumns    :: Bool
     }
     deriving (Show, Read, Eq, Data, Typeable)
 
@@ -97,11 +105,15 @@ getArgs = cmdArgs argSpec
 -- | Defines & documents the CLI arguments.
 argSpec :: Args
 argSpec =
-    Args { argPercentPerStep = def &= argPos 0 &= typ "PERCENT"
-         , argSteps          = def &= argPos 1 &= typ "STEPS"
-         , argCurrentPrice   = def &= argPos 2 &= typ "PRICE"
-         , argTotalSpend     = def &= argPos 3 &= typ "TOTAL_SPEND"
-         }
+    Args
+            { argPercentPerStep = def &= argPos 0 &= typ "PERCENT"
+            , argSteps          = def &= argPos 1 &= typ "STEPS"
+            , argCurrentPrice   = def &= argPos 2 &= typ "PRICE"
+            , argTotalSpend     = def &= argPos 3 &= typ "TOTAL_SPEND"
+            , argFlipColumns    =
+                False &= explicit &= name "f" &= name "flip-columns" &= help
+                    "Flip the order of the Amount & Price columns."
+            }
         &= summary
                (  "crypto-dca-calculator v"
                <> showVersion version
