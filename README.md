@@ -25,6 +25,14 @@ $ stack run 0.25 4 50000 100
 $ stack run -- --help
 ```
 
+TODO:
+
+* Add `fee-percentage` CLI param for taking trading fees into account.
+* Add `amount-precision` & `price-precision` CLI params for controlling
+  precision of printed values.
+* Add Coinbase/Binance integrations for auto-placing orders.
+
+
 [get-stack]: https://docs.haskellstack.org/en/stable/README/
 
 
