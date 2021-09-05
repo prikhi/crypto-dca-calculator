@@ -30,17 +30,20 @@ renderTable
 renderTable flipColumns Ladder {..} =
     let
         percentHeaders = map (Header . renderPercent . sPercent) lSteps
-        rowHeaders     = Group
+        totalHeaders   = if lTotalFee /= 0
+            then [Header "Total", Header "Fee", Header "Avg"]
+            else [Header "Total", Header "Avg"]
+        rowHeaders = Group
             DoubleLine
-            [ Group NoLine percentHeaders
-            , Group NoLine $ flipRow [Header "Total", Header "Avg"]
-            ]
+            [Group NoLine percentHeaders, Group NoLine $ flipRow totalHeaders]
         columnHeaders =
             Group SingleLine $ flipRow [Header "Amount", Header "Price"]
 
-        footerRows = flipRow $ map
-            flipRow
-            [[renderAmount lTotalBought, ""], ["", renderPrice lAverageSpend]]
+        footerRows = flipRow $ map flipRow $ concat
+            [ [[renderAmount lTotalBought, ""]]
+            , [ ["", renderPrice lTotalFee] | lTotalFee /= 0 ]
+            , [["", renderPrice lAverageSpend]]
+            ]
 
         tableData = map (flipRow . stepToRow) lSteps <> footerRows
         table     = Table rowHeaders columnHeaders tableData

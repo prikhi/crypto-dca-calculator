@@ -39,6 +39,7 @@ run (cleanArgs -> CleanedArgs{..}) = do
                                      caSteps
                                      caCurrentPrice
                                      caTotalSpend
+                                     caFeePercent
     putStrLn $ renderTable caFlipColumns ladder
 
 
@@ -47,6 +48,7 @@ data CleanedArgs = CleanedArgs
     , caSteps          :: Integer
     , caCurrentPrice   :: Pico
     , caTotalSpend     :: Pico
+    , caFeePercent     :: Pico
     , caFlipColumns    :: Bool
     }
     deriving (Show, Read, Eq)
@@ -57,6 +59,7 @@ cleanArgs Args {..} = CleanedArgs
     , caSteps          = argSteps
     , caCurrentPrice   = realToFrac argCurrentPrice
     , caTotalSpend     = realToFrac argTotalSpend
+    , caFeePercent     = realToFrac argFeePercent
     , caFlipColumns    = argFlipColumns
     }
 
@@ -67,6 +70,7 @@ data Args = Args
     , argSteps          :: Integer
     , argCurrentPrice   :: Double
     , argTotalSpend     :: Double
+    , argFeePercent     :: Double
     , argFlipColumns    :: Bool
     }
     deriving (Show, Read, Eq, Data, Typeable)
@@ -85,8 +89,14 @@ argSpec =
             , argSteps          = def &= argPos 1 &= typ "STEPS"
             , argCurrentPrice   = def &= argPos 2 &= typ "PRICE"
             , argTotalSpend     = def &= argPos 3 &= typ "TOTAL_SPEND"
+            , argFeePercent     = 0
+                                  &= explicit
+                                  &= name "f"
+                                  &= name "fee-percent"
+                                  &= typ "PERCENT"
+                                  &= help "Account for the given exchange fee."
             , argFlipColumns    =
-                False &= explicit &= name "f" &= name "flip-columns" &= help
+                False &= explicit &= name "c" &= name "flip-columns" &= help
                     "Flip the order of the Amount & Price columns."
             }
         &= summary

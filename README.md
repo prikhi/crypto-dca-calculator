@@ -27,7 +27,6 @@ $ stack run -- --help
 
 TODO:
 
-* Add `fee-percentage` CLI param for taking trading fees into account.
 * Add `amount-precision` & `price-precision` CLI params for controlling
   precision of printed values.
 * Add Coinbase/Binance integrations for auto-placing orders.

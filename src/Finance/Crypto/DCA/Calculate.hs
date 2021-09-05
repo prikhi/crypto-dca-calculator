@@ -15,6 +15,7 @@ data Ladder = Ladder
     { lSteps        :: [Step]
     , lTotalBought  :: Pico
     , lAverageSpend :: Pico
+    , lTotalFee     :: Pico
     }
 
 -- | Each purchase step of a ladder.
@@ -36,15 +37,19 @@ calculateLadderBuys
     -- ^ current price
     -> Pico
     -- ^ total amount to spend
+    -> Pico
+    -- ^ The fee percentage charged by the echange
     -> Ladder
-calculateLadderBuys percentPerStep steps currentPrice totalToSpend =
+calculateLadderBuys percentPerStep steps currentPrice totalToSpend feePercent =
     let lSteps        = map mkStep [1 .. steps]
         lTotalBought  = sum $ map sAmount lSteps
         lAverageSpend = totalToSpend / lTotalBought
     in  Ladder { .. }
   where
+    lTotalFee :: Pico
+    lTotalFee = (feePercent / 100) * totalToSpend
     spendPerStep :: Pico
-    spendPerStep = totalToSpend / fromIntegral steps
+    spendPerStep = (totalToSpend - lTotalFee) / fromIntegral steps
     mkStep :: Integer -> Step
     mkStep stepNum =
         let sPercent = fromInteger stepNum * percentPerStep
