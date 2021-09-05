@@ -29,7 +29,9 @@ source-repository head
 
 library
   exposed-modules:
+      Finance.Crypto.DCA.Calculate
       Finance.Crypto.DCA.Main
+      Finance.Crypto.DCA.Render
   other-modules:
       Paths_crypto_dca_calculator
   hs-source-dirs:
