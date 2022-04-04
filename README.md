@@ -27,9 +27,8 @@ $ stack run -- --help
 
 TODO:
 
-* Add `amount-precision` & `price-precision` CLI params for controlling
-  precision of printed values.
-* Add Coinbase/Binance integrations for auto-placing orders.
+* Add config file with default precisions & fees per currency.
+* Add Coinbase/Binance/Gemini integrations for auto-placing orders.
 
 
 [get-stack]: https://docs.haskellstack.org/en/stable/README/

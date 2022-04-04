@@ -6,7 +6,7 @@ cabal-version: 1.12
 
 name:           crypto-dca-calculator
 version:        0.1.0.0
-synopsis:       Short, one-line summary of project here.
+synopsis:       Generate Laddered Buys for Cryptocurrency Purchases
 description:    Longer description of package here.
                 .
                 Maybe include a simple usage example.

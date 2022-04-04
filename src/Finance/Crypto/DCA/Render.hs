@@ -24,10 +24,14 @@ import           Finance.Crypto.DCA.Calculate   ( Ladder(..)
 renderTable
     :: Bool
     -- ^ flip the default @Amount, Price@ columns to @Price, Amount@.
+    -> Integer
+    -- ^ decimal places to render the @Price@ column in.
+    -> Integer
+    -- ^ decimal places to render the @Amount@ column in.
     -> Ladder
     -- ^ the calculated series of laddered buys.
     -> String
-renderTable flipColumns Ladder {..} =
+renderTable flipColumns pricePrecision amountPrecision Ladder {..} =
     let
         percentHeaders = map (Header . renderPercent . sPercent) lSteps
         totalHeaders   = if lTotalFee /= 0
@@ -40,7 +44,7 @@ renderTable flipColumns Ladder {..} =
             Group SingleLine $ flipRow [Header "Amount", Header "Price"]
 
         footerRows = flipRow $ map flipRow $ concat
-            [ [[renderAmount lTotalBought, ""]]
+            [ [[renderAmount lTotalBought, renderPrice lTotalSpent]]
             , [ ["", renderPrice lTotalFee] | lTotalFee /= 0 ]
             , [["", renderPrice lAverageSpend]]
             ]
@@ -58,6 +62,8 @@ renderTable flipColumns Ladder {..} =
     renderPercent =
         (<> "%") . formatScientific Fixed (Just 2) . realToFrac . negate
     renderAmount :: Pico -> String
-    renderAmount = formatScientific Fixed (Just 8) . realToFrac
+    renderAmount =
+        formatScientific Fixed (Just $ fromInteger amountPrecision) . realToFrac
     renderPrice :: Pico -> String
-    renderPrice = formatScientific Fixed (Just 2) . realToFrac
+    renderPrice =
+        formatScientific Fixed (Just $ fromInteger pricePrecision) . realToFrac
