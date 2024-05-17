@@ -1,6 +1,6 @@
 module Main where
 
-import           Finance.Crypto.DCA.Main
+import Finance.Crypto.DCA.Main
 
 
 main :: IO ()

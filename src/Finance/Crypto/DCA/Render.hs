@@ -1,23 +1,26 @@
 {-# LANGUAGE RecordWildCards #-}
-{- | Rendering a series of laddered buys.
--}
+
+-- | Rendering a series of laddered buys.
 module Finance.Crypto.DCA.Render
     ( renderTable
     ) where
 
-import           Data.Fixed                     ( Pico )
-import           Data.Scientific                ( FPFormat(Fixed)
-                                                , formatScientific
-                                                )
-import           Text.Tabular                   ( Header(..)
-                                                , Properties(..)
-                                                , Table(..)
-                                                )
-import           Text.Tabular.AsciiArt          ( render )
+import Data.Fixed (Pico)
+import Data.Scientific
+    ( FPFormat (Fixed)
+    , formatScientific
+    )
+import Text.Tabular
+    ( Header (..)
+    , Properties (..)
+    , Table (..)
+    )
+import Text.Tabular.AsciiArt (render)
 
-import           Finance.Crypto.DCA.Calculate   ( Ladder(..)
-                                                , Step(..)
-                                                )
+import Finance.Crypto.DCA.Calculate
+    ( Ladder (..)
+    , Step (..)
+    )
 
 
 -- | Render the buys in a table, with total/average rows afterwards.
@@ -34,24 +37,29 @@ renderTable
 renderTable flipColumns pricePrecision amountPrecision Ladder {..} =
     let
         percentHeaders = map (Header . renderPercent . sPercent) lSteps
-        totalHeaders   = if lTotalFee /= 0
-            then [Header "Total", Header "Fee", Header "Avg"]
-            else [Header "Total", Header "Avg"]
-        rowHeaders = Group
-            DoubleLine
-            [Group NoLine percentHeaders, Group NoLine $ flipRow totalHeaders]
+        totalHeaders =
+            if lTotalFee /= 0
+                then [Header "Total", Header "Fee", Header "Avg"]
+                else [Header "Total", Header "Avg"]
+        rowHeaders =
+            Group
+                DoubleLine
+                [Group NoLine percentHeaders, Group NoLine $ flipRow totalHeaders]
         columnHeaders =
             Group SingleLine $ flipRow [Header "Amount", Header "Price"]
 
-        footerRows = flipRow $ map flipRow $ concat
-            [ [[renderAmount lTotalBought, renderPrice lTotalSpent]]
-            , [ ["", renderPrice lTotalFee] | lTotalFee /= 0 ]
-            , [["", renderPrice lAverageSpend]]
-            ]
+        footerRows =
+            flipRow $
+                map flipRow $
+                    concat
+                        [ [[renderAmount lTotalBought, renderPrice lTotalSpent]]
+                        , [["", renderPrice lTotalFee] | lTotalFee /= 0]
+                        , [["", renderPrice lAverageSpend]]
+                        ]
 
         tableData = map (flipRow . stepToRow) lSteps <> footerRows
-        table     = Table rowHeaders columnHeaders tableData
-    in
+        table = Table rowHeaders columnHeaders tableData
+     in
         render id id id table
   where
     flipRow :: [a] -> [a]
